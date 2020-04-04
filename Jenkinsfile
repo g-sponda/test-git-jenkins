@@ -2,9 +2,18 @@ pipeline {
     agent {
         docker {
             image 'python:3.7'
-            args '--user 0:0'
+            args '--user 0:0 -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
+
+    environment 
+    {
+        ECR_URL = "${env.ECR_URL}"
+        ECR_CRED = "${env.ECR_CRED}"
+        APP_NAME = 'aws_dms_task_status_reporter'
+        DEPLOY_NAME = 'aws-dms-task-status-exporter'
+    }
+
     stages {
         stage('Install dependencies') {
             steps {
@@ -22,13 +31,17 @@ pipeline {
             }
             steps {
                 script {
+                    sh 'apt update && apt install docker.io -y && service docker start'
+                    sh 'pip install awscli'
                     sh 'git rev-parse --short HEAD > commit-id'
                     tag = readFile('commit-id').replace('\n', '').replace('\r', '')
-                    appName = 'aws_dms_task_status_reporter'
-                    imageName = 'sponda/${appName}:${tag}'
+                    imageName = "${APP_NAME}:${tag}"
 
-                    sh 'docker build -t ${imageName} .'
-                    sh 'docker push ${imageName}'
+                    def customImage = docker.build(imageName)
+                    docker.withRegistry(ECR_URL, ECR_CRED)
+                    {
+                        docker.image(imageName).push()
+                    }
                 }
             }
         }
@@ -37,15 +50,28 @@ pipeline {
                 branch 'develop'
             }
             steps {
-                input 'You want to deploy?'
+                // input 'You want to deploy?'
 
                 script {
+                    sh 'curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl'
+                    sh 'chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl'
+                    sh "sed 's/IMAGE_TAG/${tag}/g' kubernetes/app.yml > app.yml"
 
-                    sh 'kubectl apply -f kubernetes/app.yaml'
-                    sh 'kubectl set image deployment aws_dms_task_status_reporter aws_dms_task_status_reporter=${imageName} --record'
-                    sh 'kubectl rollout status deployment/aws_dms_task_status_reporter'
+                    withKubeConfig([credentialsId: 'kube_config',]) {
+                        sh 'kubectl apply -f app.yml'
+                        try {
+                            // Verify the status during 5 min
+                            sh "kubectl rollout status deployment/${DEPLOY_NAME} --timeout 300s"
 
-                    customImage.push('latest')
+                            docker.withRegistry(ECR_URL, ECR_CRED)
+                            {
+                                docker.image("${APP_NAME}:latest").push()
+                            }
+                        } catch(e) {
+                            // If non return zero do the rollback
+                            sh "kubectl rollout undo deployment/${DEPLOY_NAME}"
+                        }
+                    }
                 }
             }
         }

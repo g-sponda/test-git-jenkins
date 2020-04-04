@@ -2,6 +2,46 @@
 
 This is an exporter for monitor status of AWS DMS replication tasks.
 
+
+## Jenkins
+
+Here is described some plugins and variables to be set and run the Jenkinsfile correctly.
+
+### Requirements
+
+Install in the jenkins machine, the follow packages:
+- git 
+- python3.7
+- pip (python3.7)
+- docker 
+
+### Plugins
+You will need to install some plugins as:
+- https://plugins.jenkins.io/amazon-ecr/
+- https://plugins.jenkins.io/kubernetes-cli/
+
+### Variables
+You need to setup an aws ecr credential providing aws_access_key and aws_secret_key.
+
+#### AWS ECR Credentials
+To set an aws credential, go to: `Credentials` > `System` > `Global credentials` > `Add Credentials`. 
+
+In `Kind` option, choose `AWS Credentials`, set the `ID` to `ecr_credentials`, and set other values.
+
+#### Kubeconfig 
+To set an aws credential, go to: `Credentials` > `System` > `Global credentials` > `Add Credentials`. 
+
+In `Kind` option, choose `Secret File`, set the `ID` to `kube_config`, and upload the kube config to access your kubernetes cluster.
+
+#### Global properties
+Set the follow Environment variables:
+- ECR_CRED (Ex: `ecr:\<ecr-region\>:ecr_credentials`)
+- ECR_URL (URL to your ECR. Ex: `https://\<your-account\>.dkr.ecr.\<ecr-region\>.amazonaws.com`)
+
+
+
+---
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
