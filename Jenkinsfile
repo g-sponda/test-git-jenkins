@@ -27,9 +27,8 @@ pipeline {
                     appName = 'aws_dms_task_status_reporter'
                     imageName = 'sponda/${appName}:${tag}'
 
-                    def customImage = docker.build('${imageName}')
-                    customImage.push() 
-
+                    sh 'docker build -t ${imageName} .'
+                    sh 'docker push ${imageName}'
                 }
             }
         }
