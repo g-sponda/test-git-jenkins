@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: aws_dms_task_status_exporter
-          image: "sponda/aws_dms_task_status_exporter:DOCKER_TAG"
+          image: "sponda/aws_dms_task_status_exporter:IMAGE_TAG"
           imagePullPolicy: Always
           ports:
             - name: http
