@@ -2,6 +2,31 @@
 
 This is an exporter for monitor status of AWS DMS replication tasks.
 
+
+## Jenkins
+
+Here is described some plugins and variables to be set and run the Jenkinsfile correctly.
+
+### Requirements
+
+Install in the jenkins machine, the follow packages:
+- git 
+- python3.7
+- pip (python3.7)
+- docker 
+
+#### Plugins
+You will need to install some plugins as:
+- https://plugins.jenkins.io/amazon-ecr/
+
+#### Variables
+You need to setup an aws credential providing aws_access_key and aws_secret_key.
+
+
+
+
+---
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
