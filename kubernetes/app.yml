@@ -1,32 +1,37 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: aws_dms_task_status_exporter
+  name: aws-dms-task-status-exporter
   labels:
-    app: aws_dms_task_status_exporter
+    app: aws-dms-task-status-exporter
 spec:
   ports:
     - port: 9213
       targetPort: 9213
   selector:
-    app: aws_dms_task_status_exporter
+    app: aws-dms-task-status-exporter
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aws_dms_task_status_exporter
+  name: aws-dms-task-status-exporter
 spec:
-  replicas: 3
+  selector:
+    matchLabels:
+      run: aws-dms-task-status-exporter
+  replicas: 2
   template:
     metadata:
       labels:
-        app: aws_dms_task_status_exporter
+        run: aws-dms-task-status-exporter
     spec:
       containers:
-        - name: aws_dms_task_status_exporter
-          image: "sponda/aws_dms_task_status_exporter:IMAGE_TAG"
-          imagePullPolicy: Always
-          ports:
-            - name: http
-              containerPort: 9213
+      - name: aws-dms-task-status-exporter
+        image: 476023098245.dkr.ecr.us-east-1.amazonaws.com/aws_dms_task_status_reporter:IMAGE_TAG
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 9213
+      imagePullSecrets:
+      - name: ecr
