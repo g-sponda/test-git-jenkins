@@ -38,7 +38,12 @@ Set the follow Environment variables:
 - ECR_CRED (Ex: `ecr:\<ecr-region\>:ecr_credentials`)
 - ECR_URL (URL to your ECR. Ex: `https://\<your-account\>.dkr.ecr.\<ecr-region\>.amazonaws.com`)
 
-
+### Pay Attention
+In the `kubernetes/app.yml` expected to use `imagePullSecrets` with the name `ecr`. It's expected that k8s already communicate with AWS ECR.
+```
+    imagePullSecrets:
+      - name: ecr
+```
 
 ---
 
